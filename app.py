@@ -228,9 +228,12 @@ def index():
         ocr_result = ''
         for box in results[0].boxes.xyxy.cpu().numpy().astype(int):
             x1, y1, x2, y2 = box
-            cv2.rectangle(img_pred, (x1, y1), (x2, y2), (0,255,0), 2)
+            overlay = img_pred.copy()
+            cv2.rectangle(overlay, (x1, y1), (x2, y2), (0,255,0), -1)  # Relleno verde
+            alpha = 0.35  # Transparencia
+            img_pred = cv2.addWeighted(overlay, alpha, img_pred, 1 - alpha, 0)
+            cv2.rectangle(img_pred, (x1, y1), (x2, y2), (0,255,0), 2)  # Borde verde
             crop = img[y1:y2, x1:x2]
-            # Corregir perspectiva antes del OCR
             roi_alineado = corregir_perspectiva(crop)
             ocr_result, roi_procesado, filtro_usado, ocr_usado = ocr_placa_multifiltro(roi_alineado, reader)
             cv2.imwrite(os.path.join(app.config['ROI_FOLDER'], filename), roi_procesado)
